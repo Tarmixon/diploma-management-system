@@ -1,0 +1,361 @@
+/* client/src/index.css */
+
+:root {
+  /* СВІТЛА ТЕМА: Яскраві кольори та високий контраст */
+  --bg-color: #f3f4f6;
+  --card-bg: #ffffff;
+  --text-main: #111827;
+  --text-muted: #4b5563;
+  --border-color: #d1d5db;
+  
+  --primary-color: #0055ff; /* Яскравий неоновий синій */
+  --primary-hover: #003ecb;
+  --danger-color: #ff0033;  /* Яскравий червоний */
+  
+  --shadow: none; /* Жодних розмитих тіней, лише чіткі лінії */
+
+  /* СТАТУСИ */
+  --status-checking-bg: #fef08a;
+  --status-checking-text: #854d0e;
+  --status-approved-bg: #bbf7d0;
+  --status-approved-text: #166534;
+  --status-rejected-bg: #fecaca;
+  --status-rejected-text: #991b1b;
+
+  /* ЕЛЕМЕНТИ ФОРМ ТА ТАБЛИЦЬ */
+  --input-bg: #ffffff;
+  --input-border: #9ca3af;
+  --table-header-bg: #e5e7eb;
+  --table-border: #d1d5db;
+
+  /* РІВНІШІ КУТИ (Flat Design) */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}
+
+[data-theme='dark'] {
+  /* ТЕМНА ТЕМА: Глибокий чорний фон та яскраві акценти */
+  --bg-color: #0a0a0a;
+  --card-bg: #141414;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-color: #262626;
+  
+  --primary-color: #3b82f6;
+  --primary-hover: #60a5fa;
+  --danger-color: #f87171;
+  
+  --shadow: none;
+
+  /* СТАТУСИ */
+  --status-checking-bg: rgba(234, 179, 8, 0.2);
+  --status-checking-text: #fde047;
+  --status-approved-bg: rgba(34, 197, 94, 0.2);
+  --status-approved-text: #86efac;
+  --status-rejected-bg: rgba(239, 68, 68, 0.2);
+  --status-rejected-text: #fca5a5;
+
+  /* ЕЛЕМЕНТИ ФОРМ ТА ТАБЛИЦЬ */
+  --input-bg: #0a0a0a;
+  --input-border: #404040;
+  --table-header-bg: #0a0a0a;
+  --table-border: #262626;
+}
+
+/* ЗАГАЛЬНІ БАЗОВІ СТИЛІ */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.app-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ШАПКА ТА БРЕНДИНГ */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--card-bg);
+  padding: 16px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  margin-bottom: 32px;
+}
+
+.nav-left-group {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.brand-logo {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary-color);
+  letter-spacing: -0.5px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-item:hover, .nav-item.active {
+  color: var(--primary-color);
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--bg-color);
+}
+
+/* КНОПКИ */
+.btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+.btn-primary:hover { background-color: var(--primary-hover); }
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+.btn-danger:hover { background-color: #cc0000; }
+
+/* ДАШБОРД ТА КАРТКИ */
+.dashboard-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.dashboard-desc {
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  font-size: 15px;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.project-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.project-desc {
+  font-size: 14px;
+  color: var(--text-main);
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.project-meta-tags {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.project-analytics-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  background-color: var(--bg-color);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+/* БЕЙДЖІ СТАТУСІВ (Квадратні) */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  line-height: 1.5;
+}
+.status-checking { background-color: var(--status-checking-bg); color: var(--status-checking-text); }
+.status-затверджено { background-color: var(--status-approved-bg); color: var(--status-approved-text); }
+.status-відхилено { background-color: var(--status-rejected-bg); color: var(--status-rejected-text); }
+.status-видалено { background-color: transparent; color: var(--danger-color); border: 1px solid var(--danger-color); }
+
+/* ФОРМИ ТА ТАБЛИЦІ */
+.auth-container, .form-container {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 32px;
+}
+
+.auth-container { max-width: 420px; margin: 40px auto; }
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+  text-transform: uppercase;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.data-table th, .data-table td {
+  padding: 14px;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.data-table th {
+  background-color: var(--table-header-bg);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.empty-state { color: var(--text-muted); font-style: italic; padding: 20px 0; }
+
+@media (max-width: 768px) {
+  .navbar { flex-direction: column; gap: 16px; padding: 20px; }
+  .nav-left-group { flex-direction: column; gap: 16px; width: 100%; }
+  .nav-links { width: 100%; justify-content: center; }
+  .user-controls { flex-direction: column; width: 100%; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px; }
+}
+
+/* КАСТОМНИЙ ЛОГОТИП DIPPOM */
+.logo-dip {
+  color: var(--text-main);
+}
+
+.logo-pom {
+  color: #111;
+  background-color: #ff9900;
+  padding: 0 4px;
+  border-radius: 4px;
+  margin-left: 2px;
+}
+
+/* --- СТИЛІ ДЛЯ ДРУКУ (ЗВІТНОСТІ) --- */
+@media print {
+  /* Ховаємо все зайве: навігацію, кнопки, фони */
+  .navbar, .btn, .no-print {
+    display: none !important;
+  }
+  
+  /* Робимо білий фон для всього екрана (корисно для темної теми) */
+  body, .app-container, .form-container {
+    background-color: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Таблиця для друку має бути чорно-білою з чіткими рамками */
+  .data-table th, .data-table td {
+    border: 1px solid black !important;
+    color: black !important;
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+
+  .data-table th {
+    background-color: #f0f0f0 !important;
+    -webkit-print-color-adjust: exact;
+  }
+}
