@@ -40,6 +40,14 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       [name, email, passwordHash, userRole] // 3. Використовуємо passwordHash замість dummy
     );
 
+    if (userRole === 'teacher') {
+          await query(
+            `INSERT INTO supervisors (name, department, specialization) 
+             VALUES ($1, $2, $3)`,
+            [name, department || 'Кафедра АСУ', specialization || 'Загальна']
+          );
+        }
+    
     res.status(201).json({
       message: 'Користувача успішно створено!',
       user: result.rows[0]
