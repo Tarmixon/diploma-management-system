@@ -19,7 +19,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 // 2. Створити нового користувача (POST /api/users)
 router.post('/', async (req: Request, res: Response): Promise<void> => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, department, specialization } = req.body;
 
   if (!name || !email || !password) {
     res.status(400).json({ message: 'Будь ласка, заповніть всі обов\'язкові поля (name, email, password)' });
