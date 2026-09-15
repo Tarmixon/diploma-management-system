@@ -1,45 +1,49 @@
-// server/src/routes/projects.ts
 import express, { Request, Response } from 'express';
 import { query } from '../db/index';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = express.Router();
 
-// --- ЕМУЛЯТОР ЗОВНІШНЬОГО API ---
-const checkRelevanceFromAPI = async (keywords: string): Promise<string> => {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  if (!keywords) return 'Не визначено';
-  const lowerKeywords = keywords.toLowerCase();
-  
-  if (lowerKeywords.includes('штучний інтелект') || lowerKeywords.includes('ai') || lowerKeywords.includes('react') || lowerKeywords.includes('node.js')) {
-    return 'Висока (Актуальна)';
-  } else if (lowerKeywords.includes('pascal') || lowerKeywords.includes('delphi') || lowerKeywords.includes('vba')) {
-    return 'Низька (Застаріла)';
+// Ініціалізуємо ШІ (ключ беремо з файлу .env)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+// --- РЕАЛЬНА ФУНКЦІЯ ПЕРЕВІРКИ ЧЕРЕЗ GEMINI API ---
+const checkRealRelevance = async (title: string, description: string): Promise<string> => {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+    const prompt = `
+      Оціни актуальність теми дипломної роботи для спеціальності "Комп'ютерні науки".
+      Назва: "${title}".
+      Опис: "${description}".
+      Відповідай суворо лише одним з трьох варіантів: "Висока (Актуальна)", "Середня (Припустима)", або "Застаріла". 
+      Не пиши жодних інших символів чи пояснень.
+    `;
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (error) {
+    console.error("Помилка Gemini API:", error);
+    return "Потребує ручної перевірки"; 
   }
-  return 'Середня (Нова)';
 };
 
-// --- ОНОВЛЕНА ФУНКЦІЯ: Гнучкий підбір керівника ---
+// --- ФУНКЦІЯ: Гнучкий підбір керівника ---
 const findBestSupervisor = async (projectKeywords: string): Promise<number | null> => {
   if (!projectKeywords) return null;
 
-  // Отримуємо всіх керівників з бази
   const result = await query('SELECT supervisor_id, specialization FROM supervisors WHERE specialization IS NOT NULL');
   const supervisors = result.rows;
 
-  // Очищаємо ключові слова проєкту: переводимо в нижній регістр, 
-  // замінюємо всі коми на пробіли і розбиваємо за будь-якою кількістю пробілів
   const pKeywords = projectKeywords
     .toLowerCase()
     .replace(/,/g, ' ')
     .split(/\s+/)
     .map(k => k.trim())
-    .filter(k => k.length > 0); // видаляємо порожні елементи
+    .filter(k => k.length > 0);
   
   let bestMatchId: number | null = null;
   let maxMatches = 0;
 
   for (const sup of supervisors) {
-    // Так само детально очищаємо спеціалізацію викладача з бази
     const sKeywords = sup.specialization
       .toLowerCase()
       .replace(/,/g, ' ')
@@ -49,14 +53,12 @@ const findBestSupervisor = async (projectKeywords: string): Promise<number | nul
 
     let currentMatches = 0;
 
-    // Шукаємо часткові або повні збіги між словами
     for (const pk of pKeywords) {
       if (sKeywords.some((sk: string) => sk.includes(pk) || pk.includes(sk))) {
         currentMatches++;
       }
     }
 
-    // Запам'ятовуємо викладача з найбільшою кількістю збігів
     if (currentMatches > maxMatches) {
       maxMatches = currentMatches;
       bestMatchId = sup.supervisor_id;
@@ -69,7 +71,6 @@ const findBestSupervisor = async (projectKeywords: string): Promise<number | nul
 // 1. Отримати список усіх дипломних тем (GET /api/projects)
 router.get('/', async (req: Request, res: Response) => {
   try {
-    // Використовуємо JOIN для об'єднання таблиць і отримання імен
     const result = await query(`
       SELECT 
         p.*, 
@@ -97,7 +98,6 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    // --- НОВЕ: Перевірка ліміту тем (1 активна тема на студента) ---
     const activeProjectCheck = await query(
       `SELECT project_id, status FROM projects 
        WHERE student_id = $1 AND status != 'відхилено'`,
@@ -110,7 +110,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    // --- Перевірка на унікальність (Антиплагіат) ---
+
     const duplicateCheck = await query(
       `SELECT project_id, title FROM projects WHERE LOWER(title) LIKE LOWER($1)`,
       [`%${title.trim()}%`]
@@ -123,10 +123,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    // -----------------------------------------------------------
 
-    // КРОК 1: Перевірка актуальності
-    const relevanceScore = await checkRelevanceFromAPI(keywords);
+    // КРОК 1: Перевірка актуальності через ШІ
+    const relevanceScore = await checkRealRelevance(title, description || '');
 
     // КРОК 2: Автоматичний підбір керівника
     const assignedSupervisorId = await findBestSupervisor(keywords);
@@ -141,14 +140,12 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
     const newProject = result.rows[0];
 
-    // --- КРОК 4: Запис в історію ---
+    // КРОК 4: Запис в історію
     await query(
       `INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)`,
       [student_id, newProject.project_id, 'Створення теми дипломного проєкту']
     );
-    // -------------------------------------
 
-    // --- КРОК 5 (НОВИЙ): Дістаємо ім'я призначеного керівника для гарного сповіщення ---
     let supervisorName = null;
     if (assignedSupervisorId) {
       const supRes = await query('SELECT name FROM supervisors WHERE supervisor_id = $1', [assignedSupervisorId]);
@@ -171,10 +168,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 
 // 3. Змінити статус теми (PATCH /api/projects/:id/status) - для Адміністратора
 router.patch('/:id/status', async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params; // Отримуємо ID теми з URL
-  const { status, admin_id } = req.body; // Отримуємо новий статус та ID адміна з тіла запиту
+  const { id } = req.params; 
+  const { status, admin_id } = req.body; 
 
-  // Перевіряємо, чи передано валідний статус, який підтримується БД
   const validStatuses = ['перевірка', 'затверджено', 'відхилено'];
   if (!validStatuses.includes(status)) {
     res.status(400).json({ 
@@ -183,14 +179,12 @@ router.patch('/:id/status', async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  // Перевіряємо, чи передано admin_id для запису в історію
   if (!admin_id) {
     res.status(400).json({ message: 'Необхідно передати admin_id для запису в історію дій.' });
     return;
   }
 
   try {
-    // Змінюємо статус теми
     const result = await query(
       `UPDATE projects 
        SET status = $1 
@@ -204,12 +198,10 @@ router.patch('/:id/status', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // --- ЗАПИС В ІСТОРІЮ ---
     await query(
       `INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)`,
       [admin_id, id, `Зміна статусу теми на "${status}"`]
     );
-    // -----------------------
 
     res.json({
       message: `Статус теми успішно змінено на "${status}"!`,
@@ -240,13 +232,8 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
 
     const projectTitle = checkProject.rows[0].title;
 
-    // Відв'язуємо існуючу історію від project_id, щоб уникнути помилки Foreign Key, але зберегти аудит
     await query('UPDATE history SET project_id = NULL WHERE project_id = $1', [id]);
-
-    // Видаляємо саму тему
     await query('DELETE FROM projects WHERE project_id = $1', [id]);
-
-    // Фіксуємо факт видалення в історії (project_id = NULL)
     await query(
       `INSERT INTO history (user_id, project_id, action) VALUES ($1, NULL, $2)`,
       [admin_id, `Видалення теми: "${projectTitle}"`]
@@ -281,7 +268,6 @@ router.patch('/:id/supervisor', async (req: Request, res: Response): Promise<voi
   }
 
   try {
-    // Перетворюємо порожнє значення на NULL, якщо адмін зняв керівника
     const supId = supervisor_id ? parseInt(supervisor_id) : null;
 
     const result = await query(
@@ -294,14 +280,12 @@ router.patch('/:id/supervisor', async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Дістаємо ім'я нового керівника для запису в історію
     let supName = 'Не призначено (знято адміном)';
     if (supId) {
       const supRes = await query('SELECT name FROM supervisors WHERE supervisor_id = $1', [supId]);
       if (supRes.rows.length > 0) supName = supRes.rows[0].name;
     }
 
-    // Записуємо дію в історію
     await query(
       `INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)`,
       [admin_id, id, `Ручне призначення керівника: ${supName}`]
@@ -325,7 +309,6 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    // 1. Антиплагіат: перевіряємо, чи немає такої ж назви серед ІНШИХ тем (крім поточної)
     const duplicateCheck = await query(
       'SELECT project_id FROM projects WHERE title ILIKE $1 AND project_id != $2',
       [title, id]
@@ -335,24 +318,26 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 2. Якщо студент змінив ключові слова, система має перепризначити ідеального керівника
+    // НОВЕ: Оцінюємо актуальність ЗАНОВО після редагування опису чи назви
+    const newRelevanceScore = await checkRealRelevance(title, description || '');
+
+    // НОВЕ: Перепризначаємо керівника на основі нових ключових слів
     const newSupervisorId = await findBestSupervisor(keywords);
 
-    // 3. Оновлюємо дані та автоматично повертаємо статус на "перевірка"
+    // Оновлюємо дані, включаючи relevance, та автоматично повертаємо статус на "перевірка"
     await query(
       `UPDATE projects 
-       SET title = $1, description = $2, keywords = $3, status = 'перевірка', supervisor_id = $4 
-       WHERE project_id = $5 AND student_id = $6`,
-      [title, description, keywords, newSupervisorId, id, student_id]
+       SET title = $1, description = $2, keywords = $3, status = 'перевірка', supervisor_id = $4, relevance = $5
+       WHERE project_id = $6 AND student_id = $7`,
+      [title, description, keywords, newSupervisorId, newRelevanceScore, id, student_id]
     );
 
-    // 4. Фіксуємо дію в аудиті
     await query(
       'INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)',
-      [student_id, id, 'Редагування теми студентом (відправлено на повторну перевірку)']
+      [student_id, id, 'Редагування теми студентом (переоцінено ШІ та відправлено на перевірку)']
     );
 
-    res.json({ message: 'Тему успішно оновлено та відправлено на перевірку!' });
+    res.json({ message: 'Тему успішно оновлено, переоцінено та відправлено на перевірку!' });
   } catch (error) {
     console.error('Помилка редагування теми:', error);
     res.status(500).json({ message: 'Помилка сервера при редагуванні теми' });
