@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 // --- РЕАЛЬНА ФУНКЦІЯ ПЕРЕВІРКИ ЧЕРЕЗ GEMINI API ---
 const checkRealRelevance = async (title: string, description: string): Promise<string> => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
     const prompt = `
       Оціни актуальність теми дипломної роботи для спеціальності "Комп'ютерні науки".
       Назва: "${title}".
