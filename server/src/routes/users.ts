@@ -134,14 +134,14 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
     // 4. Налаштовуємо "поштаря" Nodemailer
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // Використовуємо SSL
+      port: 587, // Альтернативний порт для обходу блокувань
+      secure: false, // Обов'язково false для порту 587
+      requireTLS: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       },
       tls: {
-        // Допомагає обійти деякі суворі мережеві перевірки на хмарних серверах
         rejectUnauthorized: false
       }
     });
