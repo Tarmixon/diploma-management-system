@@ -6,9 +6,8 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     include: ['recharts', 'lodash']
-  }
+  },
   build: {
     chunkSizeWarningLimit: 1000
   }
-
 })
