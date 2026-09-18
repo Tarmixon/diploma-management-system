@@ -234,15 +234,17 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                 </>
               )}
 
-              {/* МЕТА-ПАНЕЛЬ */}
+{/* МЕТА-ПАНЕЛЬ */}
               {editingProjectId !== project.project_id && (
-                <div className="project-analytics-panel">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div className="project-analytics-panel" style={{ overflowX: 'hidden' }}>
+                  
+                  {/* Блок актуальності */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                     <strong>Актуальність:</strong>
                     {(currentUser.role === 'admin' || currentUser.role === 'teacher') && project.status !== 'затверджено' ? (
                       <select
                         className="form-control"
-                        style={{ padding: '4px 8px', width: 'auto', fontSize: '13px', marginBottom: 0, backgroundColor: 'var(--bg-color)' }}
+                        style={{ padding: '4px 8px', maxWidth: '100%', flex: '1 1 200px', fontSize: '13px', marginBottom: 0, backgroundColor: 'var(--bg-color)' }}
                         value={project.relevance || ''}
                         onChange={(e) => handleRelevanceChange(project.project_id, e.target.value)}
                       >
@@ -253,16 +255,17 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                         <option value="Потребує ручної перевірки">Потребує ручної перевірки</option>
                       </select>
                     ) : (
-                      <span>{project.relevance || 'Не оцінено'}</span>
+                      <span style={{ wordBreak: 'break-word' }}>{project.relevance || 'Не оцінено'}</span>
                     )}
                   </div>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Блок керівника */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                     <strong>Керівник:</strong>
                     {currentUser.role === 'admin' ? (
                       <select 
                         className="form-control"
-                        style={{ padding: '4px 8px', width: 'auto', fontSize: '13px', backgroundColor: 'var(--bg-color)' }}
+                        style={{ padding: '4px 8px', maxWidth: '100%', flex: '1 1 200px', fontSize: '13px', marginBottom: 0, backgroundColor: 'var(--bg-color)' }}
                         value={project.supervisor_id || ''}
                         onChange={(e) => handleSupervisorChange(project.project_id, e.target.value)}
                       >
@@ -270,37 +273,37 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                         {supervisors.map(sup => <option key={sup.supervisor_id} value={sup.supervisor_id}>{sup.name}</option>)}
                       </select>
                     ) : (
-                      project.supervisor_name ? <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>{project.supervisor_name}</span> : <span style={{ color: 'var(--danger-color)' }}>Не призначено</span>
+                      project.supervisor_name ? <span style={{ color: 'var(--primary-color)', fontWeight: 'bold', wordBreak: 'break-word' }}>{project.supervisor_name}</span> : <span style={{ color: 'var(--danger-color)' }}>Не призначено</span>
                     )}
                   </div>
 
                   {(currentUser.role === 'admin' || currentUser.role === 'teacher') && (
-                    <div><strong>Подав студент:</strong> {project.student_name}</div>
+                    <div style={{ wordBreak: 'break-word', marginTop: '8px' }}><strong>Подав студент:</strong> {project.student_name}</div>
                   )}
                 </div>
               )}
 
               {/* ПАНЕЛЬ КНОПОК */}
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '20px', flexWrap: 'wrap' }}>
                 
                 {/* КНОПКИ АДМІНА ТА ВИКЛАДАЧА */}
                 {(currentUser.role === 'admin' || currentUser.role === 'teacher') && (
                   <>
                     {project.status === 'перевірка' && (
                       <>
-                        <button onClick={() => handleStatusChange(project.project_id, 'затверджено')} className="btn btn-primary">Затвердити</button>
-                        <button onClick={() => handleStatusChange(project.project_id, 'відхилено')} className="btn btn-danger">Відхилити</button>
+                        <button onClick={() => handleStatusChange(project.project_id, 'затверджено')} className="btn btn-primary" style={{ flex: '1 1 auto' }}>Затвердити</button>
+                        <button onClick={() => handleStatusChange(project.project_id, 'відхилено')} className="btn btn-danger" style={{ flex: '1 1 auto' }}>Відхилити</button>
                       </>
                     )}
                     {currentUser.role === 'admin' && (
-                      <button onClick={() => handleDelete(project.project_id)} className="btn" style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', marginLeft: project.status === 'перевірка' ? 'auto' : '0' }}>Видалити з БД</button>
+                      <button onClick={() => handleDelete(project.project_id)} className="btn" style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', flex: '1 1 100%' }}>Видалити з БД</button>
                     )}
                   </>
                 )}
 
                 {/* НОВА КНОПКА РЕДАГУВАННЯ ДЛЯ СТУДЕНТА */}
                 {currentUser.role === 'student' && project.status !== 'затверджено' && editingProjectId !== project.project_id && (
-                  <button onClick={() => startEditing(project)} className="btn" style={{ border: '1px solid var(--primary-color)', color: 'var(--primary-color)', backgroundColor: 'transparent' }}>
+                  <button onClick={() => startEditing(project)} className="btn" style={{ border: '1px solid var(--primary-color)', color: 'var(--primary-color)', backgroundColor: 'transparent', flex: '1 1 auto' }}>
                     Редагувати тему
                   </button>
                 )}
