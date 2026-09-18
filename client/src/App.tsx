@@ -9,6 +9,8 @@ import Home from './pages/Home';
 import Reports from './pages/Reports';
 import Analytics from './pages/Analytics';
 import './index.css'; 
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -106,7 +108,10 @@ function App() {
             path="/reports" 
             element={user?.role === 'admin' ? <Reports /> : <Navigate to="/" />} 
           />
-
+          
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
           <Route 
             path="/analytics" 
             element={user?.role === 'admin' ? <Analytics /> : <Navigate to="/" />} 
