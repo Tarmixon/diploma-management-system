@@ -234,7 +234,7 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                 </>
               )}
 
-{/* МЕТА-ПАНЕЛЬ */}
+              {/* МЕТА-ПАНЕЛЬ */}
               {editingProjectId !== project.project_id && (
                 <div className="project-analytics-panel" style={{ overflowX: 'hidden' }}>
                   
