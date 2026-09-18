@@ -14,6 +14,7 @@ interface Project {
   student_name?: string;
   supervisor_name?: string;
   report_url?: string;
+  grade?: number;
 }
 
 export default function Home() {
@@ -80,6 +81,26 @@ export default function Home() {
     } catch (err: any) { alert(err.response?.data?.message || 'Помилка при видаленні теми.'); }
   };
 
+// Стан для зберігання введених оцінок (ключ - id проєкту, значення - оцінка)
+  const [grades, setGrades] = useState<Record<number, string>>({});
+
+  const handleGradeSubmit = async (projectId: number) => {
+    const gradeValue = grades[projectId];
+    if (!gradeValue) return;
+
+    try {
+      await api.patch(`/projects/${projectId}/grade`, { 
+        grade: parseInt(gradeValue), 
+        teacher_id: currentUser.user_id 
+      });
+      alert('Оцінку успішно збережено!');
+      // Якщо є функція оновлення списку - розкоментуйте:
+      // fetchProjects();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Помилка при збереженні оцінки');
+    }
+  };
+  
   // --- НОВІ ФУНКЦІЇ ДЛЯ РЕДАГУВАННЯ ---
   const startEditing = (project: Project) => {
     setEditingProjectId(project.project_id);
@@ -230,8 +251,8 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
               {/* ПАНЕЛЬ КНОПОК */}
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
                 
-                {/* КНОПКИ АДМІНА */}
-                {currentUser.role === 'admin' && (
+                {/* КНОПКИ АДМІНА ТА ВИКЛАДАЧА */}
+                {(currentUser.role === 'admin' || currentUser.role === 'teacher') && (
                   <>
                     {project.status === 'перевірка' && (
                       <>
@@ -239,7 +260,9 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                         <button onClick={() => handleStatusChange(project.project_id, 'відхилено')} className="btn btn-danger">Відхилити</button>
                       </>
                     )}
-                    <button onClick={() => handleDelete(project.project_id)} className="btn" style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', marginLeft: project.status === 'перевірка' ? 'auto' : '0' }}>Видалити з БД</button>
+                    {currentUser.role === 'admin' && (
+                      <button onClick={() => handleDelete(project.project_id)} className="btn" style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)', marginLeft: project.status === 'перевірка' ? 'auto' : '0' }}>Видалити з БД</button>
+                    )}
                   </>
                 )}
 
@@ -298,6 +321,34 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                   )}
                 </div>
               )}
+                      {/* Блок оцінювання (показуємо тільки якщо вже є завантажений файл) */}
+                  {project.report_url && (
+                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+                      <div style={{ marginBottom: '12px', fontSize: '15px' }}>
+                        <strong>Оцінка за роботу:</strong> {project.grade ? <span style={{ color: '#0d6efd', fontWeight: 'bold', fontSize: '16px' }}>{project.grade} / 100</span> : <span style={{ color: 'var(--text-muted)' }}>Ще не оцінено</span>}
+                      </div>
+
+                      {/* Інпут та кнопка виставляння оцінки ТІЛЬКИ для викладача */}
+                      {currentUser.role === 'teacher' && (
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input 
+                            type="number" 
+                            min="0"
+                            max="100"
+                            className="form-control" 
+                            style={{ width: '100px', marginBottom: 0 }} 
+                            placeholder="Бали"
+                            value={grades[project.project_id] || ''}
+                            onChange={(e) => setGrades({...grades, [project.project_id]: e.target.value})}
+                          />
+                          <button onClick={() => handleGradeSubmit(project.project_id)} className="btn btn-primary" style={{ backgroundColor: '#198754', borderColor: '#198754' }}>
+                            Зберегти оцінку
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+              
               {/* --------------------------------------------------------------------------------- */}
 
             </div>
