@@ -64,10 +64,6 @@ export default function Login({ setUser }: { setUser: (user: any) => void }) {
         </button>
       </form>
 
-      <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}>
-        Ще не зареєстровані? <Link to="/register" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500 }}>Створити акаунт</Link>
-      </div>
-
       <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
           Ще не зареєстровані? <Link to="/register" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500 }}>Створити акаунт</Link>
