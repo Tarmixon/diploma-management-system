@@ -68,8 +68,11 @@ export default function Login({ setUser }: { setUser: (user: any) => void }) {
         Ще не зареєстровані? <Link to="/register" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500 }}>Створити акаунт</Link>
       </div>
 
-      <div className="mt-3 text-right">
-        <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-700">
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <div className="text-sm text-gray-600">
+          Ще не зареєстровані? <Link to="/register" className="text-blue-600 font-bold hover:underline">Створити акаунт</Link>
+        </div>
+        <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-blue-600 underline">
           Забули пароль?
         </Link>
       </div>
