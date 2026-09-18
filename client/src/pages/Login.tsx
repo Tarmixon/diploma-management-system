@@ -67,6 +67,13 @@ export default function Login({ setUser }: { setUser: (user: any) => void }) {
       <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}>
         Ще не зареєстровані? <Link to="/register" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500 }}>Створити акаунт</Link>
       </div>
+
+      <div className="mt-3 text-right">
+        <Link to="/forgot-password" className="text-sm text-blue-500 hover:text-blue-700">
+          Забули пароль?
+        </Link>
+      </div>
+      
     </div>
   );
 }
