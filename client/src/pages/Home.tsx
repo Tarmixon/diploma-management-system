@@ -13,6 +13,7 @@ interface Project {
   relevance: string | null;
   student_name?: string;
   supervisor_name?: string;
+  report_url?: string;
 }
 
 export default function Home() {
@@ -20,8 +21,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [supervisors, setSupervisors] = useState<{supervisor_id: number, name: string}[]>([]);
-  
-  // --- НОВІ СТАНИ ДЛЯ РЕДАГУВАННЯ ---
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', keywords: '' });
   // ---------------------------------
@@ -109,7 +110,34 @@ export default function Home() {
   if (loading) return <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Завантаження даних...</div>;
   if (error) return <div style={{ color: 'var(--danger-color)', padding: '20px' }}>{error}</div>;
 
+const handleFileUpload = async (projectId: number, studentId: number) => {
+    if (!file) return;
+    setIsUploading(true);
+    
+    const formData = new FormData();
+    formData.append('reportFile', file);
+    formData.append('student_id', studentId.toString());
+
+    try {
+      // api імпортовано з '../api'
+      const response = await api.patch(`/projects/${projectId}/report`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' } 
+      });
+      
+      alert('Звіт успішно завантажено!');
+      // Якщо є функція завантаження проєктів (наприклад, fetchProjects), розкоментувати наступний рядок:
+      // fetchProjects(); 
+      
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Помилка завантаження файлу');
+    } finally {
+      setIsUploading(false);
+      setFile(null);
+    }
+  };
+  
   return (
+    
     <div className="form-container">
       <h2 className="dashboard-title">
         <span className="logo-dip">Dip</span><span className="logo-pom">Pom</span>:{' '}
@@ -171,7 +199,7 @@ export default function Home() {
                 </>
               )}
 
-              {/* МЕТА-ПАНЕЛЬ (ХОВАТИ ПРИ РЕДАГУВАННІ, ЩОБ НЕ ЗАВАЖАЛО) */}
+              {/* МЕТА-ПАНЕЛЬ */}
               {editingProjectId !== project.project_id && (
                 <div className="project-analytics-panel">
                   <div><strong>Актуальність:</strong> {project.relevance || 'Не оцінено'}</div>
@@ -215,13 +243,62 @@ export default function Home() {
                   </>
                 )}
 
-                {/* НОВА КНОПКА РЕДАГУВАННЯ ДЛЯ СТУДЕНТА (Якщо статус не затверджено) */}
+                {/* НОВА КНОПКА РЕДАГУВАННЯ ДЛЯ СТУДЕНТА */}
                 {currentUser.role === 'student' && project.status !== 'затверджено' && editingProjectId !== project.project_id && (
                   <button onClick={() => startEditing(project)} className="btn" style={{ border: '1px solid var(--primary-color)', color: 'var(--primary-color)', backgroundColor: 'transparent' }}>
                     Редагувати тему
                   </button>
                 )}
               </div>
+
+              {/* --------------------------------------------------------------------------------- */}
+              {/* НОВИЙ БЛОК: ЗАВАНТАЖЕННЯ ТА ПЕРЕГЛЯД ЗВІТУ (Відображається лише для затверджених тем) */}
+              {/* --------------------------------------------------------------------------------- */}
+              {project.status === 'затверджено' && (
+                <div style={{ marginTop: '20px', padding: '16px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
+                  <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px', fontWeight: 'bold' }}>Фінальний звіт роботи</h4>
+
+                  {/* Якщо файл є - показуємо посилання всім (адмінам, викладачам і студенту) */}
+                  {project.report_url ? (
+                    <div style={{ marginBottom: currentUser.role === 'student' ? '16px' : '0', fontSize: '14px', color: '#198754' }}>
+                      ✓ Звіт завантажено:{' '}
+                      <a 
+                        href={project.report_url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        style={{ color: 'var(--primary-color)', textDecoration: 'underline', fontWeight: 500 }}
+                      >
+                        Переглянути документ
+                      </a>
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: currentUser.role === 'student' ? '16px' : '0', fontSize: '14px', color: 'var(--text-muted)' }}>
+                      Звіт ще не завантажено. {currentUser.role === 'student' && 'Прикріпіть файл (PDF, DOCX або ZIP).'}
+                    </div>
+                  )}
+
+                  {/* Форму для завантаження показуємо ТІЛЬКИ студенту */}
+                  {currentUser.role === 'student' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <input 
+                        type="file" 
+                        accept=".pdf,.doc,.docx,.zip"
+                        className="form-control"
+                        onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+                      />
+                      <button 
+                        onClick={() => handleFileUpload(project.project_id, project.student_id)}
+                        disabled={!file || isUploading}
+                        className="btn btn-primary"
+                        style={{ width: 'fit-content', opacity: (!file || isUploading) ? 0.6 : 1 }}
+                      >
+                        {isUploading ? 'Йде завантаження у хмару...' : 'Відправити звіт на кафедру'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* --------------------------------------------------------------------------------- */}
 
             </div>
           ))}
