@@ -35,41 +35,36 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="flex justify-center items-center mt-24">
-      <div className="bg-white p-10 rounded shadow-sm border border-gray-200 w-[400px]">
-        <h2 className="text-2xl font-bold mb-8 text-center text-gray-900">Новий пароль</h2>
-        
-        {message && <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm text-center">{message}</div>}
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm text-center">{error}</div>}
-        
-        {!message && (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2 uppercase">Новий пароль:</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                required
-                minLength={6}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#198754] text-white font-bold py-3 px-4 rounded hover:bg-green-700 transition-colors uppercase text-sm mt-2 disabled:opacity-50"
-            >
-              {isLoading ? 'Збереження...' : 'Зберегти пароль'}
-            </button>
-          </form>
-        )}
-        
-        <div className="mt-6 text-center">
-          <Link to="/login" className="text-sm text-gray-600 hover:text-blue-600 hover:underline">
-            Повернутися до входу
-          </Link>
-        </div>
+    <div className="auth-container">
+      <h2 style={{ textAlign: 'center', marginBottom: '24px', marginTop: 0 }}>Новий пароль</h2>
+      
+      {message && <div style={{ color: 'green', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>{message}</div>}
+      {error && <div style={{ color: 'var(--danger-color, red)', fontSize: '14px', marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
+      
+      {!message && (
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Введіть новий пароль:</label>
+            <input
+              type="password"
+              className="form-control"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+          
+          <button type="submit" disabled={isLoading} className="btn btn-primary" style={{ width: '100%', padding: '12px', backgroundColor: '#198754', borderColor: '#198754' }}>
+            {isLoading ? 'Збереження...' : 'Зберегти пароль'}
+          </button>
+        </form>
+      )}
+      
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <Link to="/login" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+          Повернутися до входу
+        </Link>
       </div>
     </div>
   );
