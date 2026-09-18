@@ -133,16 +133,11 @@ router.post('/forgot-password', async (req: Request, res: Response): Promise<voi
 
     // 4. Налаштовуємо "поштаря" Nodemailer
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587, // Альтернативний порт для обходу блокувань
-      secure: false, // Обов'язково false для порту 587
-      requireTLS: true,
+      host: "sandbox.smtp.mailtrap.io",
+      port: 2525,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
       }
     });
 
