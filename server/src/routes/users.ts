@@ -42,13 +42,18 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       [name, email, passwordHash, userRole] // 3. Використовуємо passwordHash замість dummy
     );
 
-    if (userRole === 'teacher') {
-          await query(
-            `INSERT INTO supervisors (name, department, specialization) 
-             VALUES ($1, $2, $3)`,
-            [name, department || 'Кафедра АСУ', specialization || 'Загальна']
-          );
-        }
+    if (role === 'teacher') {
+      // Перевіряємо, чи такий викладач вже є у списку керівників
+      const existingSupervisor = await query('SELECT supervisor_id FROM supervisors WHERE name = $1', [name]);
+      
+      // Якщо немає - створюємо нового
+      if (existingSupervisor.rows.length === 0) {
+        await query(
+          'INSERT INTO supervisors (name, department, specialization) VALUES ($1, $2, $3)',
+          [name, 'Кафедра АСУ', 'Загальна'] // Ваші стандартні значення
+        );
+      }
+    }
     
     res.status(201).json({
       message: 'Користувача успішно створено!',
