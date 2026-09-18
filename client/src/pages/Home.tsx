@@ -309,16 +309,16 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                 )}
               </div>
 
-              {/* --------------------------------------------------------------------------------- */}
-              {/* НОВИЙ БЛОК: ЗАВАНТАЖЕННЯ ТА ПЕРЕГЛЯД ЗВІТУ (Відображається лише для затверджених тем) */}
+{/* --------------------------------------------------------------------------------- */}
+              {/* НОВИЙ БЛОК: ЗАВАНТАЖЕННЯ ТА ПЕРЕГЛЯД ЗВІТУ (Адаптовано під темну/світлу тему) */}
               {/* --------------------------------------------------------------------------------- */}
               {project.status === 'затверджено' && (
-                <div style={{ marginTop: '20px', padding: '16px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-                  <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px', fontWeight: 'bold' }}>Фінальний звіт роботи</h4>
+                <div style={{ marginTop: '20px', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'var(--bg-color)' }}>
+                  <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px', fontWeight: 'bold', color: 'var(--text-main)' }}>Фінальний звіт роботи</h4>
 
-                  {/* Якщо файл є - показуємо посилання всім (адмінам, викладачам і студенту) */}
+                  {/* Якщо файл є - показуємо посилання всім */}
                   {project.report_url ? (
-                    <div style={{ marginBottom: currentUser.role === 'student' ? '16px' : '0', fontSize: '14px', color: '#198754' }}>
+                    <div style={{ marginBottom: currentUser.role === 'student' ? '16px' : '0', fontSize: '14px', color: 'var(--primary-color)' }}>
                       ✓ Звіт завантажено:{' '}
                       <a 
                         href={project.report_url} 
@@ -350,22 +350,21 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                         className="btn btn-primary"
                         style={{ width: 'fit-content', opacity: (!file || isUploading) ? 0.6 : 1 }}
                       >
-                        {isUploading ? 'Йде завантаження у хмару...' : 'Відправити звіт на кафедру'}
+                        {isUploading ? 'Йде завантаження...' : 'Відправити звіт на кафедру'}
                       </button>
                     </div>
                   )}
-                </div>
-              )}
-                      {/* Блок оцінювання (показуємо тільки якщо вже є завантажений файл) */}
+
+                  {/* Блок оцінювання */}
                   {project.report_url && (
-                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
-                      <div style={{ marginBottom: '12px', fontSize: '15px' }}>
-                        <strong>Оцінка за роботу:</strong> {project.grade ? <span style={{ color: '#0d6efd', fontWeight: 'bold', fontSize: '16px' }}>{project.grade} / 100</span> : <span style={{ color: 'var(--text-muted)' }}>Ще не оцінено</span>}
+                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                      <div style={{ marginBottom: currentUser.role === 'teacher' ? '12px' : '0', fontSize: '15px', color: 'var(--text-main)' }}>
+                        <strong>Оцінка за роботу:</strong> {project.grade ? <span style={{ color: 'var(--primary-color)', fontWeight: 'bold', fontSize: '16px' }}>{project.grade} / 100</span> : <span style={{ color: 'var(--text-muted)' }}>Ще не оцінено</span>}
                       </div>
 
                       {/* Інпут та кнопка виставляння оцінки ТІЛЬКИ для викладача */}
                       {currentUser.role === 'teacher' && (
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                           <input 
                             type="number" 
                             min="0"
@@ -383,6 +382,8 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
                       )}
                     </div>
                   )}
+                </div>
+              )}
               
               {/* --------------------------------------------------------------------------------- */}
 
