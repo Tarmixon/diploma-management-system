@@ -396,4 +396,22 @@ router.patch('/:id/report', upload.single('reportFile'), async (req: Request, re
   }
 });
 
+// 9. Оцінювання звіту викладачем (PATCH /api/projects/:id/grade)
+router.patch('/:id/grade', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { grade, teacher_id } = req.body;
+
+  try {
+    await query('UPDATE projects SET grade = $1 WHERE project_id = $2', [grade, id]);
+    
+    // Додаємо запис в історію
+    await query('INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)', [teacher_id, id, `Оцінено фінальний звіт: ${grade} балів`]);
+    
+    res.json({ message: 'Оцінку успішно збережено!' });
+  } catch (error) {
+    console.error('Помилка оцінювання:', error);
+    res.status(500).json({ message: 'Помилка сервера при збереженні оцінки' });
+  }
+});
+
 export default router;
