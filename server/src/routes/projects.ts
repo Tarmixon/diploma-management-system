@@ -414,4 +414,22 @@ router.patch('/:id/grade', async (req: Request, res: Response): Promise<void> =>
   }
 });
 
+// 10. Оновлення актуальності вручну (PATCH /api/projects/:id/relevance)
+router.patch('/:id/relevance', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { relevance, user_id } = req.body;
+
+  try {
+    await query('UPDATE projects SET relevance = $1 WHERE project_id = $2', [relevance, id]);
+    
+    // Записуємо в історію
+    await query('INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)', [user_id, id, `Актуальність змінено вручну на: ${relevance}`]);
+    
+    res.json({ message: 'Актуальність успішно оновлено!' });
+  } catch (error) {
+    console.error('Помилка оновлення актуальності:', error);
+    res.status(500).json({ message: 'Помилка сервера при оновленні актуальності' });
+  }
+});
+
 export default router;
