@@ -1,6 +1,9 @@
 import express, { Request, Response } from 'express';
 import { query } from '../db/index';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const router = express.Router();
 
@@ -25,6 +28,22 @@ const checkRealRelevance = async (title: string, description: string): Promise<s
     return "Потребує ручної перевірки"; 
   }
 };
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'diploma_reports',
+    resource_type: 'auto' // Дозволяє завантажувати і PDF, і DOCX, і ZIP
+  } as any
+});
+
+const upload = multer({ storage: storage });
 
 // --- ФУНКЦІЯ: Гнучкий підбір керівника ---
 const findBestSupervisor = async (projectKeywords: string): Promise<number | null> => {
@@ -341,6 +360,39 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error('Помилка редагування теми:', error);
     res.status(500).json({ message: 'Помилка сервера при редагуванні теми' });
+  }
+});
+
+// 8. Завантаження файлу звіту студентом (PATCH /api/projects/:id/report)
+router.patch('/:id/report', upload.single('reportFile'), async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { student_id } = req.body;
+
+  if (!req.file) {
+    res.status(400).json({ message: 'Файл не завантажено' });
+    return;
+  }
+
+  try {
+    // Перевіряємо, чи тема дійсно затверджена
+    const projectCheck = await query('SELECT status FROM projects WHERE project_id = $1 AND student_id = $2', [id, student_id]);
+    if (projectCheck.rows.length === 0 || projectCheck.rows[0].status !== 'затверджено') {
+       res.status(403).json({ message: 'Завантажувати звіт можна лише для затверджених тем!' });
+       return;
+    }
+
+    const fileUrl = req.file.path; // Cloudinary автоматично повертає готове посилання
+
+    // Оновлюємо БД
+    await query('UPDATE projects SET report_url = $1 WHERE project_id = $2', [fileUrl, id]);
+
+    // Записуємо в історію
+    await query('INSERT INTO history (user_id, project_id, action) VALUES ($1, $2, $3)', [student_id, id, 'Завантажено фінальний звіт (документ)']);
+
+    res.json({ message: 'Звіт успішно завантажено та прикріплено!', report_url: fileUrl });
+  } catch (error) {
+    console.error('Помилка завантаження звіту:', error);
+    res.status(500).json({ message: 'Помилка сервера при збереженні файлу' });
   }
 });
 
