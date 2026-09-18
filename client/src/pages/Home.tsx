@@ -156,6 +156,20 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
       setFile(null);
     }
   };
+
+  const handleRelevanceChange = async (projectId: number, newRelevance: string) => {
+    if (!newRelevance) return;
+    try {
+      await api.patch(`/projects/${projectId}/relevance`, { 
+        relevance: newRelevance,
+        user_id: currentUser.user_id
+      });
+      alert('Актуальність успішно оновлено!');
+      // Якщо у вас є функція завантаження проєктів, викличте її (наприклад, fetchProjects())
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Помилка при оновленні актуальності');
+    }
+  };
   
   return (
     
@@ -223,7 +237,25 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
               {/* МЕТА-ПАНЕЛЬ */}
               {editingProjectId !== project.project_id && (
                 <div className="project-analytics-panel">
-                  <div><strong>Актуальність:</strong> {project.relevance || 'Не оцінено'}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <strong>Актуальність:</strong>
+                    {(currentUser.role === 'admin' || currentUser.role === 'teacher') && project.status !== 'затверджено' ? (
+                      <select
+                        className="form-control"
+                        style={{ padding: '4px 8px', width: 'auto', fontSize: '13px', marginBottom: 0, backgroundColor: 'var(--bg-color)' }}
+                        value={project.relevance || ''}
+                        onChange={(e) => handleRelevanceChange(project.project_id, e.target.value)}
+                      >
+                        <option value="">-- Оберіть оцінку --</option>
+                        <option value="Висока (Актуальна)">Висока (Актуальна)</option>
+                        <option value="Середня (Може потребувати змін)">Середня (Може потребувати змін)</option>
+                        <option value="Низька (Застаріла)">Низька (Застаріла)</option>
+                        <option value="Потребує ручної перевірки">Потребує ручної перевірки</option>
+                      </select>
+                    ) : (
+                      <span>{project.relevance || 'Не оцінено'}</span>
+                    )}
+                  </div>
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <strong>Керівник:</strong>
