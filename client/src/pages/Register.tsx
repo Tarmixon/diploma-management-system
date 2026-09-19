@@ -20,7 +20,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Звертаємося до нашого бекенду для створення користувача
+      // Звертаємося до бекенду для створення користувача
       await api.post('/users', { name, email, password, role });
       
       // Після успішної реєстрації перенаправляємо на сторінку входу
@@ -35,7 +35,15 @@ export default function Register() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#fff' }}>
+    <div style={{ 
+      maxWidth: '400px', 
+      margin: '40px auto', 
+      padding: '20px', 
+      border: '1px solid var(--border-color)', 
+      borderRadius: '8px', 
+      backgroundColor: 'var(--bg-color)',
+      color: 'var(--text-main)' 
+    }}>
       <h2 style={{ textAlign: 'center' }}>Реєстрація</h2>
       
       <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
