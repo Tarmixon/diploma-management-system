@@ -189,17 +189,28 @@ const handleFileUpload = async (projectId: number, studentId: number) => {
           {projects.map((project) => (
             <div key={project.project_id} className="project-card">
               
-              <div className="project-card-header">
+              <div 
+                className="project-card-header" 
+                style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'flex-start', 
+                  gap: '12px',
+                  marginBottom: '16px'
+                }}
+              >
                 {/* ЯКЩО РЕЖИМ РЕДАГУВАННЯ - ПОКАЗУЄМО ІНПУТ ДЛЯ НАЗВИ */}
                 {editingProjectId === project.project_id ? (
                   <input 
                     className="form-control" 
                     value={editForm.title} 
                     onChange={(e) => setEditForm({...editForm, title: e.target.value})} 
-                    style={{ fontWeight: 700, fontSize: '16px', color: 'var(--primary-color)' }}
+                    style={{ fontWeight: 700, fontSize: '16px', color: 'var(--primary-color)', width: '100%' }}
                   />
                 ) : (
-                  <h4 className="project-title">{project.title}</h4>
+                  <h4 className="project-title" style={{ margin: 0, width: '100%', wordBreak: 'break-word' }}>
+                    {project.title}
+                  </h4>
                 )}
 
                 <span className={`status-badge status-${project.status}`}>
